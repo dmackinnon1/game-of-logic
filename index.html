@@ -30,12 +30,17 @@ let firstBoard = null;
 function refreshFirstBoard(){
 	console.log("event fired")
 	$("#firstBoard").html(globalFirstBoard.build());
+	translateTokens(globalFirstBoard, globalSecondBoard);
+	$("#secondBoard").html(globalSecondBoard.build());
+	$("#solution").html(statements(globalSecondBoard));
+	
 }
 
 evnts.addCallback("refreshFirstBoard",refreshFirstBoard);
 
 $(document).ready(function(){
     $("#firstBoard").html(globalFirstBoard.build());
+    $("#secondBoard").html(globalSecondBoard.build());
 	});
 
 </script>
@@ -69,7 +74,15 @@ $(document).ready(function(){
 </div>
 <div id='syllogism' class='framed'></div>
 <div id='firstBoard' class='framed'></div>
+<br>
+<hr>
+<br>
+
 <div id='secondBoard' class='framed'></div>
+
+<br>
+<hr>
+<br>
 <div id='solution' class='framed'></div>
 
 	<div class='row'>
