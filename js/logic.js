@@ -18,6 +18,15 @@ function tokenClick(event){
     evnts.fireEvent("refreshFirstBoard");
 }
 
+function simpleCirc(x,y,r){
+	let b = new Bldr("circle");
+	b.att("cx",x).att("cy",y).att("r", r)
+	    .att("fill","white").att("stroke","white")
+	    .att("stroke-width",0);
+    return b;
+
+}
+
 function circ(x,y,r,color,name="none"){
 	let b = new Bldr("circle");
 	b.att("cx",x).att("cy",y).att("r", r)
@@ -74,6 +83,12 @@ constructor(size=400){
 		this.svgBldr.elem(rect(width/2,height,innerSize));
 		//4
 		this.svgBldr.elem(rect(width,height,innerSize));
+
+        this.svgBldr.elem(simpleCirc(width,height/3-10,25));
+        
+        this.svgBldr.elem(new Bldr("text").text("x").att("x",width).att("y",height/3)
+            .att("font-size",40).att("text-anchor","middle").att("font-style","italic")
+            .att("font-family","times, serif"));
 
 		return this; 
 	}
