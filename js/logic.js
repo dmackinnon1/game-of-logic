@@ -59,7 +59,7 @@ function tokenValue(token){
 
 class FirstBoard {
 
-constructor(size=300){
+constructor(size=290){
 		this.size = size;
 		
 		this.xym = 0;
@@ -108,13 +108,13 @@ constructor(size=300){
         
         this.svgBldr.elem(simpleCirc(width/3-10,height,15));
         
-        this.svgBldr.elem(new Bldr("text").text("y").att("x",width/3-10).att("y",height+10)
+        this.svgBldr.elem(new Bldr("text").text("y").att("x",width/3-10).att("y",height+5)
             .att("font-size",30).att("text-anchor","middle").att("font-style","italic")
             .att("font-family","times, serif"));
 
         this.svgBldr.elem(simpleCirc(width,height,15));
         
-        this.svgBldr.elem(new Bldr("text").text("m").att("x",width).att("y",height+10)
+        this.svgBldr.elem(new Bldr("text").text("m").att("x",width).att("y",height+5)
             .att("font-size",30).att("text-anchor","middle").att("font-style","italic")
             .att("font-family","times, serif"));
 
@@ -200,7 +200,7 @@ constructor(size=200){
         
         this.svgBldr.elem(simpleCirc(width/2,height,15));
         
-        this.svgBldr.elem(new Bldr("text").text("y").att("x",width/2).att("y",height+10)
+        this.svgBldr.elem(new Bldr("text").text("y").att("x",width/2).att("y",height+5)
             .att("font-size",30).att("text-anchor","middle").att("font-style","italic")
             .att("font-family","times, serif"));
 
