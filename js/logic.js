@@ -1,6 +1,5 @@
 "use strict";
 
-
 function rect(x,y,size){
 	let b = new Bldr("rect");
 	b.att("x",x).att("y",y).att("width", size).att("height",size)
@@ -298,3 +297,259 @@ globalFirstBoard.init();
 
 var globalSecondBoard = new SecondBoard();
 globalSecondBoard.init();
+
+/***
+* Puzzles and solvers
+*/
+
+class PuzzleSet {
+
+	constructor(x, _x,y,_y,m,_m, u=""){
+
+		this.x = x;
+		this.y = y;
+		this.m = m;
+
+
+		this._x = _x;
+		this._y = _y;
+		this._m = _m;
+
+		this.u = u;
+
+	}
+}
+
+//build statement from board 2
+class Statement{
+	constructor(q, v1, v2){		
+	this.quant = q;
+	this.v1 = v1;
+	this.v2 = v2;
+	}
+
+    interpret(ps){
+        let s = "";
+        s += this.quant;
+        s += " ";
+        s += ps[this.v1];
+        s += ps.u + "are ";
+        s += ps[this.v2];
+        s += "."	
+        return s;
+    }
+
+    has(v){
+    	if(this.v1.includes(v)|| this.v2.includes(v)){
+    		return true;
+    	}
+        return false;	
+    }
+
+
+    get(v){
+    	if(this.v1.includes(v)){
+    		return this.v1;
+    	}
+    	if(this.v2.includes(v)){
+    		return this.v2;
+    	}
+    	return "";
+    }       
+}
+
+function noFromAll(s){
+	let newV2 = ""
+	if(s.v2.includes("_")){
+		newV2 = s.v2.replace("_","");
+	} else {
+		newV2 = "_" + s.v2;
+	}
+	let statement = new Statement("No",s.v1,newV2);
+	console.log(statement);
+	return statement;
+}
+
+
+class Syllogism{
+
+    constructor(set, statement1, statement2){
+    	this.ps = set;
+    	this.s1 = statement1;
+    	this.s2 = statement2;
+    }
+    
+    toString(){
+    	let s= "";
+    	s += this.s1.interpret(this.ps);
+    	s += " <br> "
+    	s += this.s2.interpret(this.ps);
+    	s += "<br>"
+    	s += "(x; '"+ this.ps.x +"', 'y: ''" + this.ps.y +"', m: '"+ this.ps.m +"')'";  
+        return s;  
+    }
+}    
+
+class Move{
+
+	constructor(description, value){
+		this.m = description;
+		this.v = value;
+	}
+
+	apply(board){
+        board[this.m] = this.v;
+	}
+}
+
+class Solver {
+	constructor(syllogism, firstBoard){
+		this.s = syllogism;
+		this.fb = firstBoard;
+		this.noMoves = [];
+		this.someMoves=[];
+	}
+
+	solve(){
+    
+      this.buildNegativeMoves();  
+      this.applyNegativeMoves();
+
+      this.buildPositiveMoves();
+      this.applyPositiveMoves();
+	}
+
+	applyNegativeMoves(){
+	    this.noMoves.forEach(m => m.apply(this.fb)); 
+	}
+	
+	applyPositiveMoves(){
+		this.someMoves.forEach(m => m.apply(this.fb));
+	}
+
+	buildNegativeMoves(){
+       this.negativeMovesFromStatement(this.s.s1);
+       this.negativeMovesFromStatement(this.s.s2);
+	}
+
+	buildPositiveMoves(){
+       this.positiveMovesFromStatement(this.s.s1);
+       this.positiveMovesFromStatement(this.s.s2);
+	}
+    
+    negativeMovesFromStatement(st){
+    	let moveString=""
+    	if(st.quant == "No"){
+            if(st.has("x")){
+                moveString = st.get("x") +"y" + st.get("m");    
+            	this.noMoves.push(new Move(moveString,1));
+            	moveString = st.get("x") +"_y" + st.get("m");
+            	this.noMoves.push(new Move(moveString,1));  
+            } else if(st.has("y")){
+                moveString = "x" + st.get("y") + st.get("m");    
+            	this.noMoves.push(new Move(moveString,1));
+            	moveString = "_x" +st.get("y") + st.get("m");
+            	this.noMoves.push(new Move(moveString,1));  
+            }
+    	}
+    	if(st.quant == "All"){
+    		//do No statement
+    		this.negativeMovesFromStatement(noFromAll(st));
+    	}
+    }
+
+    positiveMovesFromStatement(st){
+    	let testString = "";
+    	let moveString=""
+    	if(st.quant == "Some"){
+            if(st.has("x")){
+                testString = st.get("x") +"y" + st.get("m");
+                if (this.fb[testString] == 1){
+                    moveString = st.get("x") +"_y" + st.get("m");    
+            	    this.someMoves.push(new Move(moveString,2));
+                }
+                testString = st.get("x") +"_y" + st.get("m");
+                if (this.fb[testString] == 1){
+                    moveString = st.get("x") +"y" + st.get("m");    
+            	    this.someMoves.push(new Move(moveString,2));
+                }  
+            } else if(st.has("y")){
+                testString = "x" + st.get("y") + st.get("m"); 
+                if (this.fb[testString] == 1){
+                    moveString = "_x" + st.get("y") + st.get("m");    
+            	    this.someMoves.push(new Move(moveString,2));
+                }
+                testString = "_x" +st.get("y") + st.get("m");
+                if (this.fb[testString] == 1){
+            	    moveString = "x" +st.get("y") + st.get("m");
+            	    this.someMoves.push(new Move(moveString,2));  
+                }
+    	    }
+    	}
+       	if(st.quant == "All"){
+            let newStatement = new Statement("Some",st.v1,st.v2);
+            console.log(newStatement);
+    		this.positiveMovesFromStatement(newStatement);
+    	}
+    
+    }
+
+}
+//1
+let testSet = new PuzzleSet("lizards",
+    "non lizards",
+    "in need of a hair brush",
+    "not needing a hair brush",
+    "bald",
+    "not bald",
+    " creatures "
+    );
+
+let testStatement = new Statement("No","m","y");
+let testStatement2 = new Statement("No","x","_m");
+let syl1 = new Syllogism(testSet,testStatement,testStatement2);
+
+//2
+let testSet2 = new PuzzleSet("cheaters",
+    "non cheaters",
+    "trustworthy",
+    "untrustworthy",
+    "honest",
+    "dishonest",
+    " folk "
+    );
+
+let ts1 = new Statement("No","m","x");
+let ts2 = new Statement("No","_m","y");
+let syl2 = new Syllogism(testSet2,ts1,ts2);
+
+//3
+let testSet3 = new PuzzleSet("new",
+    "old",
+    "nice",
+    "not nice",
+    "wholsome",
+    "unwholsome",
+    " cakes "
+    );
+
+let ts1a = new Statement("Some","x","_m");
+let ts2a = new Statement("No","y","_m");
+let syl2a = new Syllogism(testSet3,ts1a,ts2a);
+
+//4
+
+let testSet4 = new PuzzleSet("dragon",
+    "non dragon",
+    "Scottish",
+    "non Scottish",
+    "canny",
+    "uncanny",
+    " creatures "
+    );
+
+let ts1b = new Statement("All","x","_m");
+let ts2b = new Statement("All","y","m");
+let syl2b = new Syllogism(testSet4,ts1b,ts2b);
+
+let solver = new Solver(syl2b,globalFirstBoard);
